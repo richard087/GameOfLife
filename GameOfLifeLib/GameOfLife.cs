@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace GameOfLifeLib
 {
@@ -39,24 +41,26 @@ namespace GameOfLifeLib
         }
         public GameOfLife run(uint generations = 1)
         {
-            HashSet<Coords> nextGen;
-            HashSet<Coords> mightLive;
+            ConcurrentBag<Coords> nextGen;
+            ConcurrentBag<Coords> mightLive;
             for (uint gen = 0; gen < generations; gen++)
             {
-                nextGen = new HashSet<Coords>();
-                mightLive = new HashSet<Coords>();
+                nextGen = new ConcurrentBag<Coords>();
+                mightLive = new ConcurrentBag<Coords>();
                 int liveNeighbours;
-                foreach (Coords cell in liveSet)
+                Parallel.ForEach(liveSet, cell =>
                 {
                     Coords[] neighbours = cell.GetNeighbours(Width - 1, Height - 1);
-                    mightLive.UnionWith(neighbours);
+                    Parallel.ForEach(neighbours, cell => {
+                        mightLive.Add(cell);
+                    });
                     liveNeighbours = liveSet.Intersect(neighbours).Count();
                     if (liveNeighbours == 2 || liveNeighbours == 3)
                     {
                         nextGen.Add(cell);
                     }
-                }
-                foreach (Coords cell in mightLive)
+                });
+                Parallel.ForEach(mightLive.Distinct(), cell =>
                 {
                     Coords[] neighbours = cell.GetNeighbours(Width - 1, Height - 1);
                     liveNeighbours = liveSet.Intersect(neighbours).Count();
@@ -64,8 +68,8 @@ namespace GameOfLifeLib
                     {
                         nextGen.Add(cell);
                     }
-                }
-                liveSet = nextGen;
+                });
+                liveSet = new HashSet<Coords>(nextGen);
             }
             return this;
         }
