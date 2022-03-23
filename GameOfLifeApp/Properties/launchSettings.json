@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "GameOfLifeApp": {
+      "commandName": "Project",
+      "commandLineArgs": "-x 5 -y 5"
+    }
+  }
+}
