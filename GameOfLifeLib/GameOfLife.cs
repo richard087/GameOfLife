@@ -49,10 +49,7 @@ namespace GameOfLifeLib
                 foreach (Coords cell in liveSet)
                 {
                     Coords[] neighbours = cell.GetNeighbours(Width - 1, Height - 1);
-                    foreach (Coords i in neighbours)
-                    {
-                        mightLive.Add(i);
-                    }
+                    mightLive.UnionWith(neighbours);
                     liveNeighbours = liveSet.Intersect(neighbours).Count();
                     if (liveNeighbours == 2 || liveNeighbours == 3)
                     {
